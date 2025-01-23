@@ -174,3 +174,16 @@ document.querySelectorAll('input[type="text"], button').forEach(element => {
 document.getElementById('result').addEventListener('click', function() {
     this.parentElement.downloadVideo();
 });
+
+function toggleDeveloperProfile() {
+    const profile = document.querySelector('.developer-profile');
+    profile.classList.toggle('show');
+}
+
+// Hide profile when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.developer-profile') && 
+        !e.target.closest('.dev-toggle')) {
+        document.querySelector('.developer-profile').classList.remove('show');
+    }
+});
