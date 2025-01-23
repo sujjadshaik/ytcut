@@ -1,0 +1,228 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body.dark-mode {
+    background: #181818;
+    color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 2rem;
+}
+
+.container {
+    display: flex;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    background: #202020;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.left-section {
+    flex: 0 0 40%;
+    padding: 2rem;
+    background: #282828;
+    border-radius: 8px 0 0 8px;
+}
+
+.right-section {
+    flex: 0 0 60%;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #202020;
+    border-radius: 0 8px 8px 0;
+}
+
+h1, h2 {
+    color: #ffffff;
+    text-align: center;
+}
+
+.input-group {
+    margin-bottom: 1.5rem;
+}
+
+input[type="text"], select {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #444;
+    border-radius: 4px;
+    font-size: 1rem;
+    background: #333;
+    color: #fff;
+}
+
+button {
+    background-color: #ff0000;
+    color: white;
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+    margin-right: 1rem; /* Add margin to create space between buttons */
+}
+
+button:last-child {
+    margin-right: 0; /* Remove margin from the last button */
+}
+
+button:hover {
+    background-color: #cc0000;
+}
+
+.result {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #333;
+    border-radius: 4px;
+    display: none;
+}
+
+.result h3 {
+    color: #ff0000;
+    margin-bottom: 0.5rem;
+}
+
+.result p {
+    color: #ffffff;
+}
+
+#player {
+    width: 100%;
+    max-width: 640px;
+    height: 400px;
+    background: #000;
+}
+
+.noUi-handle {
+    width: 10px;
+    height: 20px;
+    top: -6px;
+    background: #ff0000;
+    border-radius: 3px;
+}
+
+
+.developer-profile {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(40, 40, 40, 0.9);
+    padding: 15px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.developer-profile:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.dev-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.dev-info span {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.dev-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.profile-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #ff0000;
+    transition: transform 0.3s;
+}
+
+.profile-image:hover {
+    transform: scale(1.1);
+}
+
+.powered-by {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: linear-gradient(45deg, #3a3a3a, #2a2a2a);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.social-links a {
+    color: #fff;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+}
+
+.social-links a:hover {
+    transform: translateY(-3px);
+}
+
+.social-links a:nth-child(1):hover {
+    color: #E1306C;
+    text-shadow: 0 0 10px rgba(225, 48, 108, 0.5);
+}
+
+.social-links a:nth-child(2):hover {
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.social-links a:nth-child(3):hover {
+    color: #0077b5;
+    text-shadow: 0 0 10px rgba(0, 119, 181, 0.5);
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+    
+    .left-section,
+    .right-section {
+        flex: 1;
+        width: 100%;
+        padding: 1rem;
+    }
+    
+    #player {
+        height: 300px;
+    }
+}

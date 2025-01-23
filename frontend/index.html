@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YT CUT</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body class="dark-mode">
+    <div class="container">
+        <div class="left-section">
+            <h1>YT CUT</h1>
+            
+            <div class="input-group">
+                <label for="url">YouTube URL:</label>
+                <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=VIDEO_ID" required>
+            </div>
+
+            <div class="input-group">
+                <label for="start-time">Start Time (HH:MM:ss):</label>
+                <input type="text" id="start-time" placeholder="00:00:00" required readonly>
+            </div>
+
+            <div class="input-group">
+                <label for="end-time">End Time (HH:MM:ss):</label>
+                <input type="text" id="end-time" placeholder="00:00:00" required readonly>
+            </div>
+
+            <div class="input-group">
+                <label for="timestamp">Select Time Range:</label>
+                <div id="timestamp-slider"></div>
+            </div>
+
+            <button onclick="loadVideo()">Load Video</button>
+            <button onclick="downloadVideo()">Download Video</button>
+
+            <div class="result" id="result">
+                Video downloaded successfully!
+            </div>
+        </div>
+        
+        <div class="right-section">
+            <div id="player"></div>
+            <div class="developer-profile">
+                <div class="dev-info">
+                    <span>Developed by</span>
+                    <div class="dev-name">
+                        <img src="https://avatars.githubusercontent.com/u/53053362?v=4" alt="Developer Image" class="profile-image">
+                        <span>Sujjad Shaik</span>
+                        <span class="powered-by">
+                            GitHub Copilot
+                        </span>
+                    </div>
+                </div>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/sujjad.tech" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="https://github.com/sujjadshaik" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="https://www.linkedin.com/in/yourprofile" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
