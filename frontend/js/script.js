@@ -18,10 +18,24 @@ function onPlayerReady(event) {
     // Player is ready
 }
 
+// Add this function to update slider appearance based on player state
+function updateSliderState(playing) {
+    const slider = document.getElementById('timestamp-slider');
+    if (playing) {
+        slider.classList.add('active');
+    } else {
+        slider.classList.remove('active');
+    }
+}
+
+// Update onPlayerStateChange function
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.PLAYING) {
         duration = player.getDuration();
         initializeSlider();
+        updateSliderState(true);
+    } else if (event.data === YT.PlayerState.PAUSED) {
+        updateSliderState(false);
     }
 }
 
