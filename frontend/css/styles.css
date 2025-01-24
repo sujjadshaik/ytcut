@@ -505,6 +505,6 @@ input:invalid {
     border-color: #ff0000;
 }
 
-input:valid {
+/* input:valid {
     border-color: #00ff00;
-}
+} */
