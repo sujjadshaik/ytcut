@@ -33,46 +33,71 @@ def download_video():
         temp_dir = tempfile.mkdtemp()
         app.logger.info(f"Created temp directory: {temp_dir}")
         
-        # Configure yt-dlp options
+        # Configure yt-dlp options for 1080p
         ydl_opts = {
-            'format': 'best',
+            'format': 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best',
             'outtmpl': os.path.join(temp_dir, '%(title)s.%(ext)s'),
+            'merge_output_format': 'mp4',
+            'postprocessors': [{
+                'key': 'FFmpegVideoConvertor',
+                'preferedformat': 'mp4'
+            }],
+            'verbose': True
         }
         
         # Download video
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(video_url, download=True)
             video_path = ydl.prepare_filename(info)
+            if not video_path.endswith('.mp4'):
+                video_path = video_path.rsplit('.', 1)[0] + '.mp4'
             app.logger.info(f"Downloaded video to: {video_path}")
 
         # Cut video
         video_clip = VideoFileClip(video_path)
-        final_clip = video_clip.subclipped(start_time, end_time)
+        final_clip = video_clip.subclip(start_time, end_time)
         
-        output_path = os.path.join(temp_dir, f"cut_{os.path.basename(video_path)}")
-        final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
+        output_path = os.path.join(temp_dir, filename)
+        final_clip.write_videofile(
+            output_path,
+            codec="libx264",
+            audio_codec="aac",
+            bitrate="8000k",
+            preset='faster'
+        )
         app.logger.info(f"Created cut video at: {output_path}")
 
-        final_cut = send_file(
+        # Clean up the original clip
+        video_clip.close()
+        final_clip.close()
+        
+        if os.path.exists(video_path):
+            os.remove(video_path)
+
+        # Send file with proper headers
+        response = send_file(
             output_path,
+            mimetype='video/mp4',
             as_attachment=True,
-            download_name=filename
+            download_name=filename,
+            conditional=True
         )
         
-        # Cleanup original video
-        video_clip.close()
-        os.remove(video_path)
+        response.headers['Content-Length'] = os.path.getsize(output_path)
+        response.headers['Access-Control-Expose-Headers'] = 'Content-Length'
         
-        # Return the cut video file
-        return final_cut
+        return response
     
     except Exception as e:
         app.logger.error(f"Error processing video: {str(e)}")
         return jsonify({"error": str(e)}), 500
     finally:
         if temp_dir and os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
-            app.logger.info(f"Cleaned up temp directory: {temp_dir}")
+            try:
+                shutil.rmtree(temp_dir)
+                app.logger.info(f"Cleaned up temp directory: {temp_dir}")
+            except Exception as e:
+                app.logger.error(f"Error cleaning temp directory: {str(e)}")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
