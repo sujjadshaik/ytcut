@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: YT Cut Discussions
+    url: https://github.com/sujjadshaik/yt-cut/discussions
+    about: Please ask and answer questions here
+  - name: YT Cut Documentation
+    url: https://github.com/sujjadshaik/yt-cut/wiki
+    about: Check our documentation first
