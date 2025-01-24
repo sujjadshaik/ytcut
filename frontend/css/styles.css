@@ -41,8 +41,8 @@ body.dark-mode {
     width: 100%;
     padding: 1rem;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
     background: #202020;
     border-radius: 8px;
     order: -1; /* Show player first on mobile */
@@ -138,6 +138,7 @@ button:active {
 #player {
     width: 100%;
     height: 240px;
+    margin-bottom: 1rem;
     background: #000;
     border-radius: 8px;
     overflow: hidden;
@@ -145,20 +146,15 @@ button:active {
 }
 
 .developer-profile {
-    position: static;
-    margin-top: 1rem;
-    background: rgba(40, 40, 40, 0.85);
-    padding: 20px;
-    border-radius: 16px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-    z-index: 1000;
+    position: relative;
     width: 100%;
-    transform: none;
-    opacity: 1;
+    margin-top: 2rem;
+    padding: 1.2rem;
+    background: rgba(40, 40, 40, 0.95);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
 }
 
 .developer-profile.show {
@@ -291,12 +287,18 @@ button:active {
 
 @media (max-width: 768px) {
     .container {
-        flex-direction: column;
+        flex-direction: column-reverse; /* Reverse the order */
+        padding: 1rem;
     }
     
-    .left-section,
+    .left-section {
+        order: 1; /* Move form section to top */
+        width: 100%;
+        padding: 1rem;
+    }
+    
     .right-section {
-        flex: 1;
+        order: 2; /* Move video/dev section to bottom */
         width: 100%;
         padding: 1rem;
     }
@@ -306,11 +308,47 @@ button:active {
     }
 
     .developer-profile {
-        position: relative;
-        bottom: auto;
-        right: auto;
-        margin-top: 30px;
+        position: static;
+        transform: none;
+        opacity: 1;
+        margin-top: 1.5rem;
         width: 100%;
+    }
+
+    .dev-toggle {
+        display: none;
+    }
+
+    .social-links {
+        margin-top: 1rem;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-section {
+        order: 1;
+        width: 100%;
+        margin-bottom: 2rem;
+    }
+
+    .video-section {
+        order: 2;
+        width: 100%;
+        margin-top: 2rem;
+    }
+
+    #player {
+        height: 300px;
+        width: 100%;
+    }
+
+    .developer-profile {
+        position: static;
+        width: 100%;
+        margin-top: 2rem;
     }
 }
 
@@ -350,6 +388,35 @@ button:active {
         width: 280px;
         transform: translateX(120%);
         opacity: 0;
+    }
+
+    .dev-toggle {
+        display: block;
+    }
+}
+
+@media (min-width: 769px) {
+    .developer-profile {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 280px;
+        transform: translateX(120%);
+        opacity: 0;
+    }
+
+    .developer-profile.show {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    .right-section {
+        flex-direction: row;
+    }
+
+    #player {
+        height: 400px;
+        margin-bottom: 0;
     }
 
     .dev-toggle {
