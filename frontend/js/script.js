@@ -91,6 +91,132 @@ class YouTubeProgressBar {
     }
 }
 
+// Add TimeRangeSlider class
+class TimeRangeSlider {
+    constructor(container, options = {}) {
+        this.settings = {
+            minRange: options.minRange || 1,
+            step: options.step || 1,
+            min: options.min || 0,
+            max: options.max || 100,
+            values: options.values || [0, 100]
+        };
+
+        this.isDragging = false;
+        this.activeHandle = null;
+        this.container = container;
+
+        this.init();
+        this.bindEvents();
+    }
+
+    init() {
+        this.container.innerHTML = `
+            <div class="range-slider">
+                <div class="range-track"></div>
+                <div class="range-selected"></div>
+                <div class="range-handle start" data-handle="start">
+                    <div class="handle-tooltip"></div>
+                </div>
+                <div class="range-handle end" data-handle="end">
+                    <div class="handle-tooltip"></div>
+                </div>
+            </div>
+        `;
+
+        this.elements = {
+            track: this.container.querySelector('.range-track'),
+            selected: this.container.querySelector('.range-selected'),
+            handles: {
+                start: this.container.querySelector('.range-handle.start'),
+                end: this.container.querySelector('.range-handle.end')
+            },
+            tooltips: {
+                start: this.container.querySelector('.range-handle.start .handle-tooltip'),
+                end: this.container.querySelector('.range-handle.end .handle-tooltip')
+            }
+        };
+
+        this.setPositions(this.settings.values);
+    }
+
+    bindEvents() {
+        ['start', 'end'].forEach(handle => {
+            this.elements.handles[handle].addEventListener('mousedown', (e) => {
+                this.startDragging(e, handle);
+            });
+        });
+
+        document.addEventListener('mousemove', (e) => this.onDrag(e));
+        document.addEventListener('mouseup', () => this.stopDragging());
+    }
+
+    startDragging(e, handle) {
+        this.isDragging = true;
+        this.activeHandle = handle;
+        this.container.classList.add('dragging');
+    }
+
+    stopDragging() {
+        this.isDragging = false;
+        this.activeHandle = null;
+        this.container.classList.remove('dragging');
+        this.dispatchEvent('change', this.settings.values);
+    }
+
+    onDrag(e) {
+        if (!this.isDragging) return;
+
+        const rect = this.container.getBoundingClientRect();
+        const position = (e.clientX - rect.left) / rect.width;
+        const value = this.settings.min + (this.settings.max - this.settings.min) * position;
+        
+        this.updateValue(this.activeHandle, value);
+    }
+
+    updateValue(handle, value) {
+        const clampedValue = Math.max(this.settings.min, 
+            Math.min(this.settings.max, value));
+        
+        if (handle === 'start') {
+            this.settings.values[0] = Math.min(clampedValue, this.settings.values[1] - this.settings.minRange);
+        } else {
+            this.settings.values[1] = Math.max(clampedValue, this.settings.values[0] + this.settings.minRange);
+        }
+
+        this.setPositions(this.settings.values);
+        this.dispatchEvent('update', this.settings.values);
+    }
+
+    setPositions(values) {
+        const [start, end] = values;
+        const startPos = ((start - this.settings.min) / (this.settings.max - this.settings.min)) * 100;
+        const endPos = ((end - this.settings.min) / (this.settings.max - this.settings.min)) * 100;
+
+        this.elements.handles.start.style.left = `${startPos}%`;
+        this.elements.handles.end.style.left = `${endPos}%`;
+        this.elements.selected.style.left = `${startPos}%`;
+        this.elements.selected.style.width = `${endPos - startPos}%`;
+
+        this.elements.tooltips.start.textContent = this.formatTime(start);
+        this.elements.tooltips.end.textContent = this.formatTime(end);
+    }
+
+    formatTime(seconds) {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = Math.floor(seconds % 60);
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    dispatchEvent(type, values) {
+        const event = new CustomEvent(type, {
+            detail: { values }
+        });
+        this.container.dispatchEvent(event);
+    }
+}
+
 // Add initialization function
 function initYouTubePlayer() {
     if (typeof YT === 'undefined' || !YT.loaded) {
@@ -187,75 +313,35 @@ window.loadVideo = function() {
     }
 }
 
-// Update slider initialization to include time formatting
+// Replace existing slider initialization with:
 function initializeSlider() {
-    const slider = document.getElementById('timestamp-slider');
-    if (slider.noUiSlider) {
-        slider.noUiSlider.destroy();
-    }
-
-    noUiSlider.create(slider, {
-        start: [0, duration],
-        connect: true,
-        range: {
-            'min': 0,
-            'max': duration
-        },
-        tooltips: [
-            {
-                to: value => formatTime(value),
-                from: str => timeToSeconds(str)
-            },
-            {
-                to: value => formatTime(value),
-                from: str => timeToSeconds(str)
-            }
-        ]
+    const sliderContainer = document.getElementById('timestamp-slider');
+    const timeSlider = new TimeRangeSlider(sliderContainer, {
+        min: 0,
+        max: duration,
+        values: [0, duration],
+        minRange: 1,
+        step: 1
     });
 
-    // Add slider event listeners for real-time frame updates
-    slider.noUiSlider.on('slide', function(values, handle) {
-        const time = parseFloat(values[handle]);
+    // Store slider instance for later access
+    sliderContainer._timeRangeSlider = timeSlider;
+
+    sliderContainer.addEventListener('update', (e) => {
+        const [start, end] = e.detail.values;
+        document.getElementById('start-time').value = formatTime(Math.floor(start));
+        document.getElementById('end-time').value = formatTime(Math.floor(end));
         
-        // Pause video and seek to exact timestamp
         if (player) {
-            player.pauseVideo();
-            player.seekTo(time, true);
-        }
-        
-        // Update time inputs
-        const startTimeInput = document.getElementById('start-time');
-        const endTimeInput = document.getElementById('end-time');
-        
-        if (handle === 0) {
-            startTimeInput.value = formatTime(time);
-        } else {
-            endTimeInput.value = formatTime(time);
-        }
-    });
-
-    // Add smooth frame updates during sliding
-    let frameUpdateTimeout;
-    slider.noUiSlider.on('update', function(values, handle) {
-        clearTimeout(frameUpdateTimeout);
-        frameUpdateTimeout = setTimeout(() => {
-            const time = parseFloat(values[handle]);
-            if (player) {
-                player.seekTo(time, true);
-            }
-        }, 16); // ~60fps refresh rate
-    });
-
-    // Ensure video stays paused during preview
-    slider.addEventListener('mousedown', () => {
-        if (player) {
+            player.seekTo(start, true);
             player.pauseVideo();
         }
     });
 
-    // Resume normal playback state when done sliding
-    slider.addEventListener('mouseup', () => {
-        clearTimeout(frameUpdateTimeout);
+    sliderContainer.addEventListener('change', (e) => {
+        const [start, end] = e.detail.values;
+        document.getElementById('start-time').value = formatTime(Math.floor(start));
+        document.getElementById('end-time').value = formatTime(Math.floor(end));
     });
 }
 
@@ -282,19 +368,24 @@ window.downloadVideo = async function() {
             return;
         }
 
+        // Get slider values
+        const slider = document.getElementById('timestamp-slider');
+        if (!slider || !slider._timeRangeSlider) {
+            YouTubeAlert.show('Please load a video first', 'error');
+            return;
+        }
+
+        const timeValues = slider._timeRangeSlider.settings.values;
+        const startSeconds = Math.floor(timeValues[0]);
+        const endSeconds = Math.floor(timeValues[1]);
+
         const filename = prompt('Enter filename for the video:', 'cut_video.mp4');
         if (!filename) return;
 
         result.style.display = 'block';
         result.innerHTML = '<h3>Preparing download...</h3>';
         progressBar.show();
-
-        const timeRange = document.getElementById('timestamp-slider');
-        const selectedStartTime = timeRange.noUiSlider.get()[0];
-        const selectedEndTime = timeRange.noUiSlider.get()[1];
-        
-        const startSeconds = Math.floor(selectedStartTime);
-        const endSeconds = Math.floor(selectedEndTime);
+        progressBar.update(10);
 
         const response = await fetch('http://localhost:3000/download', {
             method: 'POST',
@@ -306,36 +397,20 @@ window.downloadVideo = async function() {
                 start_time: startSeconds,
                 end_time: endSeconds,
                 filename: filename
-            })         
+            })
         });
 
         if (!response.ok) {
-            throw new Error(await response.text());
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const reader = response.body.getReader();
-        const contentLength = +response.headers.get('Content-Length');
-        
-        let receivedLength = 0;
-        const chunks = [];
+        progressBar.update(50);
 
-        while(true) {
-            const {done, value} = await reader.read();
-            
-            if (done) {
-                break;
-            }
-            
-            chunks.push(value);
-            receivedLength += value.length;
-            
-            const progress = (receivedLength / contentLength) * 100;
-            progressBar.update(progress);
-        }
+        // Get the blob from the response
+        const blob = await response.blob();
+        progressBar.update(90);
 
-        progressBar.complete();
-        
-        const blob = new Blob(chunks);
+        // Create download link
         const downloadUrl = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = downloadUrl;
@@ -345,12 +420,10 @@ window.downloadVideo = async function() {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(downloadUrl);
 
-        result.innerHTML = `
-            <h3>Download Complete!</h3>
-            <p>Video saved as: ${filename}</p>
-        `;
+        progressBar.complete();
+        result.innerHTML = '<h3>Download Complete!</h3>';
         YouTubeAlert.show('Video downloaded successfully!', 'success');
-        
+
     } catch (error) {
         console.error('Error:', error);
         progressBar.error();
@@ -390,8 +463,11 @@ document.addEventListener('click', (e) => {
 
 // Add these helper functions
 function timeToSeconds(timeStr) {
-    const [hours, minutes, seconds] = timeStr.split(':').map(Number);
-    return hours * 3600 + minutes * 60 + seconds;
+    if (!timeStr) return 0;
+    const match = timeStr.match(/^(\d{2}):(\d{2}):(\d{2})$/);
+    if (!match) return null;
+    const [_, hours, minutes, seconds] = match;
+    return parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
 }
 
 function validateTimeFormat(timeStr) {
@@ -531,3 +607,48 @@ function bufferVideoFrames(startTime, endTime) {
         }
     }
 }
+
+// Add these event listeners after slider initialization
+document.getElementById('start-time').addEventListener('change', function() {
+    const startSeconds = timeToSeconds(this.value);
+    if (startSeconds === null || startSeconds >= duration) {
+        this.value = formatTime(0);
+        return;
+    }
+    
+    const endSeconds = timeToSeconds(document.getElementById('end-time').value) || duration;
+    if (startSeconds >= endSeconds) {
+        this.value = formatTime(0);
+        return;
+    }
+
+    const slider = document.getElementById('timestamp-slider');
+    const timeRangeSlider = slider._timeRangeSlider;
+    if (timeRangeSlider) {
+        timeRangeSlider.updateValue('start', startSeconds);
+        if (player) {
+            player.seekTo(startSeconds, true);
+            player.pauseVideo();
+        }
+    }
+});
+
+document.getElementById('end-time').addEventListener('change', function() {
+    const endSeconds = timeToSeconds(this.value);
+    if (endSeconds === null || endSeconds > duration) {
+        this.value = formatTime(duration);
+        return;
+    }
+    
+    const startSeconds = timeToSeconds(document.getElementById('start-time').value) || 0;
+    if (endSeconds <= startSeconds) {
+        this.value = formatTime(duration);
+        return;
+    }
+
+    const slider = document.getElementById('timestamp-slider');
+    const timeRangeSlider = slider._timeRangeSlider;
+    if (timeRangeSlider) {
+        timeRangeSlider.updateValue('end', endSeconds);
+    }
+});

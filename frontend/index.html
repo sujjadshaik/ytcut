@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YT CUT</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body class="dark-mode">
@@ -32,7 +32,7 @@
 
             <div class="input-group">
                 <label for="timestamp">Select Time Range:</label>
-                <div id="timestamp-slider"></div>
+                <div id="timestamp-slider" class="time-range-slider"></div>
             </div>
 
             <button onclick="loadVideo()">Load Video</button>
@@ -70,7 +70,6 @@
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html>
