@@ -116,11 +116,12 @@ button:active {
     display: none;
     border: 1px solid #444444;
     animation: fadeIn 0.3s ease-in-out;
+    position: relative;
 }
 
 .result h3 {
     color: #ff0000;
-    margin-bottom: 0.5rem;
+    margin-bottom: 16px;
 }
 
 .result p {
@@ -374,4 +375,136 @@ button:active {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+/* Add YouTube Alert Styles */
+#yt-alert-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.yt-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #030303;
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    font-size: 14px;
+    min-width: 300px;
+    max-width: 450px;
+    transform: translateX(120%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+    border-left: 4px solid;
+}
+
+.yt-alert.show {
+    transform: translateX(0);
+}
+
+.yt-alert.fade-out {
+    transform: translateX(120%);
+    opacity: 0;
+}
+
+.yt-alert-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+}
+
+.yt-alert-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.yt-alert-message {
+    flex-grow: 1;
+    line-height: 1.4;
+}
+
+.yt-alert-close {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.yt-alert-close:hover {
+    color: #fff;
+}
+
+/* Alert Types */
+.yt-alert.success {
+    border-left-color: #2ba640;
+}
+
+.yt-alert.error {
+    border-left-color: #ff4444;
+}
+
+.yt-alert.warning {
+    border-left-color: #ffd600;
+}
+
+.yt-alert.info {
+    border-left-color: #3ea6ff;
+}
+
+/* Add progress bar styles */
+.yt-progress-container {
+    margin-top: 16px;
+    width: 100%;
+}
+
+.yt-progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+.yt-progress-fill {
+    height: 100%;
+    background: #ff0000;
+    width: 0;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.yt-progress-text {
+    color: #aaa;
+    font-size: 12px;
+    margin-top: 8px;
+    text-align: right;
+}
+
+.yt-progress-container.complete .yt-progress-fill {
+    background: #2ba640;
+}
+
+.yt-progress-container.error .yt-progress-fill {
+    background: #ff4444;
+}
+
+/* Add validation styling */
+input:invalid {
+    border-color: #ff0000;
+}
+
+input:valid {
+    border-color: #00ff00;
 }
