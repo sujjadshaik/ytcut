@@ -139,20 +139,22 @@ button:active {
 }
 
 .noUi-handle {
-    width: 16px !important;
-    height: 16px !important;
+    width: 12px !important;
+    height: 12px !important;
     border-radius: 50%;
     background: #ff0000;
-    box-shadow: none;
-    border: none;
-    right: -8px !important;
-    top: -7px !important;
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.3);
+    border: 2px solid #fff;
     cursor: pointer;
-    transition: transform 0.1s;
+    right: -6px !important;
+    top: -2px !important;
+    transition: transform 0.1s, width 0.1s, height 0.1s;
 }
 
-.noUi-handle:hover {
+.noUi-handle:hover,
+.noUi-handle:active {
     transform: scale(1.2);
+    background: #ff1a1a;
 }
 
 .noUi-handle::before,
@@ -161,19 +163,71 @@ button:active {
 }
 
 .noUi-target {
-    height: 3px;
-    background: #535353;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
     border: none;
     box-shadow: none;
     margin: 20px 0;
+    cursor: pointer;
 }
 
 .noUi-connects {
-    background: #535353;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
 }
 
 .noUi-connect {
     background: #ff0000;
+}
+
+/* Add preview tooltip */
+.noUi-tooltip {
+    display: block;
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
+/* Add hover preview */
+.slider-preview {
+    position: absolute;
+    bottom: 100%;
+    transform: translateX(-50%);
+    background: #000;
+    border: 2px solid #fff;
+    border-radius: 4px;
+    width: 160px;
+    height: 90px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.noUi-handle:hover .slider-preview {
+    opacity: 1;
+}
+
+/* Add progress bar background */
+.noUi-connects {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+/* Add loaded progress */
+.slider-loaded-progress {
+    position: absolute;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.3);
+    z-index: 1;
 }
 
 .developer-profile {

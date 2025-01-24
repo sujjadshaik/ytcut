@@ -150,6 +150,9 @@ function onPlayerStateChange(event) {
         updateSliderState(true);
     } else if (event.data === YT.PlayerState.PAUSED) {
         updateSliderState(false);
+    } else if (event.data === YT.PlayerState.CUED) {
+        // Video is cued and ready to play
+        initializeSlider();
     }
 }
 
@@ -180,38 +183,74 @@ function initializeSlider() {
     if (slider.noUiSlider) {
         slider.noUiSlider.destroy();
     }
+
     noUiSlider.create(slider, {
         start: [0, duration],
         connect: true,
         range: {
             'min': 0,
             'max': duration
+        },
+        tooltips: [
+            {
+                to: value => formatTime(value),
+                from: str => timeToSeconds(str)
+            },
+            {
+                to: value => formatTime(value),
+                from: str => timeToSeconds(str)
+            }
+        ]
+    });
+
+    // Add slider event listeners
+    slider.noUiSlider.on('slide', function(values, handle) {
+        // Pause video while sliding
+        if (player && player.pauseVideo) {
+            player.pauseVideo();
+        }
+        
+        // Update time inputs
+        const time = parseFloat(values[handle]);
+        if (handle === 0) {
+            document.getElementById('start-time').value = formatTime(time);
+        } else {
+            document.getElementById('end-time').value = formatTime(time);
+        }
+        
+        // Seek to position when sliding
+        if (player && player.seekTo) {
+            player.seekTo(time, true);
         }
     });
 
-    slider.noUiSlider.on('update', function(values, handle) {
-        const startTime = Math.floor(parseFloat(values[0]));
-        const endTime = Math.floor(parseFloat(values[1]));
-        document.getElementById('start-time').value = formatTime(startTime);
-        document.getElementById('end-time').value = formatTime(endTime);
-    });
+    // Update slider position during video playback
+    if (player) {
+        const updateSliderPosition = () => {
+            if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+                const currentTime = player.getCurrentTime();
+                const [start, end] = slider.noUiSlider.get().map(Number);
+                
+                // Only update if current time is within range
+                if (currentTime >= start && currentTime <= end) {
+                    document.getElementById('start-time').value = formatTime(start);
+                    document.getElementById('end-time').value = formatTime(end);
+                }
+            }
+            requestAnimationFrame(updateSliderPosition);
+        };
+        updateSliderPosition();
+    }
+}
 
-    slider.noUiSlider.on('start', function() {
-        isDragging = true;
-    });
-
-    slider.noUiSlider.on('update', function(values, handle) {
-        const startTime = parseFloat(values[0]);
-        const endTime = parseFloat(values[1]);
-        document.getElementById('start-time').value = new Date(startTime * 1000).toISOString().substr(11, 8);
-        document.getElementById('end-time').value = new Date(endTime * 1000).toISOString().substr(11, 8);
-    });
-
-    slider.noUiSlider.on('end', function(values, handle) {
-        isDragging = false;
-        const time = parseFloat(values[handle]);
-        player.seekTo(time, true);
-    });
+function updatePreview(previewElement, time) {
+    if (player && player.getCurrentTime) {
+        const videoId = getUrlId(player.getVideoUrl());
+        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/0.jpg`;
+        previewElement.style.backgroundImage = `url(${thumbnailUrl})`;
+        previewElement.style.backgroundPosition = `${(time / duration) * 100}% center`;
+        previewElement.style.backgroundSize = 'cover';
+    }
 }
 
 // Update downloadVideo function
@@ -453,3 +492,13 @@ document.getElementById('end-time').addEventListener('change', function(e) {
         slider.noUiSlider.set([null, endSeconds]);
     }
 });
+
+// Add frame update function
+function updateVideoFrame(time) {
+    if (player && player.seekTo) {
+        player.seekTo(time, true);
+        if (player.getPlayerState() !== YT.PlayerState.PAUSED) {
+            player.pauseVideo();
+        }
+    }
+}
