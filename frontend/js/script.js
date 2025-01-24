@@ -324,16 +324,19 @@ function initializeSlider() {
         step: 1
     });
 
-    // Store slider instance for later access
     sliderContainer._timeRangeSlider = timeSlider;
 
+    // Update this event listener to handle both handles
     sliderContainer.addEventListener('update', (e) => {
         const [start, end] = e.detail.values;
         document.getElementById('start-time').value = formatTime(Math.floor(start));
         document.getElementById('end-time').value = formatTime(Math.floor(end));
         
         if (player) {
-            player.seekTo(start, true);
+            // Seek to start time when dragging start handle
+            // Seek to end time when dragging end handle
+            const seekTime = timeSlider.activeHandle === 'end' ? end : start;
+            player.seekTo(seekTime, true);
             player.pauseVideo();
         }
     });
