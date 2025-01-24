@@ -556,9 +556,33 @@ button:active {
 
 /* Add validation styling */
 input:invalid {
+    border-color: #444; /* Default border color */
+}
+
+/* YouTube URL validation */
+#url:invalid:not(:placeholder-shown) {
     border-color: #ff0000;
 }
 
-/* input:valid {
-    border-color: #00ff00;
-} */
+/* Time input validation - only show when user interacts */
+#start-time:invalid:not(:focus):not(:placeholder-shown),
+#end-time:invalid:not(:focus):not(:placeholder-shown) {
+    border-color: #ff0000;
+}
+
+/* Add valid state styles */
+#url:valid:not(:placeholder-shown) {
+    border-color: #444;
+}
+
+#start-time:valid:not(:placeholder-shown):not(:focus),
+#end-time:valid:not(:placeholder-shown):not(:focus) {
+    border-color: #444;
+}
+
+/* Add focus styles */
+input:focus {
+    border-color: #ff0000 !important;
+    background: #3a3a3a;
+    outline: none;
+}

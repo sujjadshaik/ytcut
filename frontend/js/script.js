@@ -111,6 +111,16 @@ function createPlayer() {
             height: '360',
             width: '640',
             videoId: lastVideoId,
+            playerVars: {
+                'playsinline': 1,
+                'enablejsapi': 1,
+                'origin': window.location.origin,
+                'autoplay': 0,
+                'controls': 1,
+                'rel': 0,
+                'modestbranding': 1,
+                'fs': 1
+            },
             events: {
                 'onReady': onPlayerReady,
                 'onStateChange': onPlayerStateChange
@@ -203,44 +213,50 @@ function initializeSlider() {
         ]
     });
 
-    // Add slider event listeners
+    // Add slider event listeners for real-time frame updates
     slider.noUiSlider.on('slide', function(values, handle) {
-        // Pause video while sliding
-        if (player && player.pauseVideo) {
+        const time = parseFloat(values[handle]);
+        
+        // Pause video and seek to exact timestamp
+        if (player) {
             player.pauseVideo();
+            player.seekTo(time, true);
         }
         
         // Update time inputs
-        const time = parseFloat(values[handle]);
-        if (handle === 0) {
-            document.getElementById('start-time').value = formatTime(time);
-        } else {
-            document.getElementById('end-time').value = formatTime(time);
-        }
+        const startTimeInput = document.getElementById('start-time');
+        const endTimeInput = document.getElementById('end-time');
         
-        // Seek to position when sliding
-        if (player && player.seekTo) {
-            player.seekTo(time, true);
+        if (handle === 0) {
+            startTimeInput.value = formatTime(time);
+        } else {
+            endTimeInput.value = formatTime(time);
         }
     });
 
-    // Update slider position during video playback
-    if (player) {
-        const updateSliderPosition = () => {
-            if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-                const currentTime = player.getCurrentTime();
-                const [start, end] = slider.noUiSlider.get().map(Number);
-                
-                // Only update if current time is within range
-                if (currentTime >= start && currentTime <= end) {
-                    document.getElementById('start-time').value = formatTime(start);
-                    document.getElementById('end-time').value = formatTime(end);
-                }
+    // Add smooth frame updates during sliding
+    let frameUpdateTimeout;
+    slider.noUiSlider.on('update', function(values, handle) {
+        clearTimeout(frameUpdateTimeout);
+        frameUpdateTimeout = setTimeout(() => {
+            const time = parseFloat(values[handle]);
+            if (player) {
+                player.seekTo(time, true);
             }
-            requestAnimationFrame(updateSliderPosition);
-        };
-        updateSliderPosition();
-    }
+        }, 16); // ~60fps refresh rate
+    });
+
+    // Ensure video stays paused during preview
+    slider.addEventListener('mousedown', () => {
+        if (player) {
+            player.pauseVideo();
+        }
+    });
+
+    // Resume normal playback state when done sliding
+    slider.addEventListener('mouseup', () => {
+        clearTimeout(frameUpdateTimeout);
+    });
 }
 
 function updatePreview(previewElement, time) {
@@ -499,6 +515,19 @@ function updateVideoFrame(time) {
         player.seekTo(time, true);
         if (player.getPlayerState() !== YT.PlayerState.PAUSED) {
             player.pauseVideo();
+        }
+    }
+}
+
+// Add frame buffering
+function bufferVideoFrames(startTime, endTime) {
+    if (player) {
+        // Pre-buffer frames in small increments
+        const bufferInterval = 0.5; // Buffer every 500ms
+        for (let time = startTime; time <= endTime; time += bufferInterval) {
+            setTimeout(() => {
+                player.seekTo(time, true);
+            }, (time - startTime) * 100);
         }
     }
 }
