@@ -1,0 +1,15 @@
+server {
+    listen 80;
+    server_name {{ domain_name | default('localhost') }};
+
+    location / {
+        root {{ frontend_path }};
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api {
+        include proxy_params;
+        proxy_pass http://unix:/opt/yt-cut/backend/ytcut.sock;
+    }
+}

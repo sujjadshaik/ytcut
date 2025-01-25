@@ -8,7 +8,7 @@ import logging
 import shutil
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=['http://localhost:8080', 'https://your-production-domain.com'])
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -98,6 +98,13 @@ def download_video():
                 app.logger.info(f"Cleaned up temp directory: {temp_dir}")
             except Exception as e:
                 app.logger.error(f"Error cleaning temp directory: {str(e)}")
+
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)

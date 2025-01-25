@@ -1,0 +1,13 @@
+[Unit]
+Description=YT Cut Flask Application
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory={{ app_dir }}
+Environment="PATH={{ venv_path }}/bin"
+ExecStart={{ venv_path }}/bin/gunicorn --workers 3 --bind unix:ytcut.sock -m 007 server:app
+
+[Install]
+WantedBy=multi-user.target

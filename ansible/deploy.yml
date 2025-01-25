@@ -1,0 +1,113 @@
+- name: Deploy YT Cut Application
+  hosts: all
+  become: yes
+  vars:
+    branch_name: "dev"
+    # domain_name: "143.198.156.7"
+  tasks:
+  # update the apt package index
+  - name: Update apt package index
+    apt:
+      update_cache: yes
+  - name: Install python3, nginx, git, ffmpeg
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - python3
+      - python3-pip
+      - nginx
+      - git
+      - ffmpeg
+      - python3-venv
+  # clone the github repo to the server
+  - name: Clone YT Cut repository
+    git:
+      repo: 'https://github.com/sujjadshaik/ytcut.git'
+      dest: /opt/yt-cut
+      version: "{{ branch_name | default('main') }}"
+      force: yes
+
+  - name: Create a virtual environment
+    command: python3 -m venv /opt/yt-cut/venv
+
+  # - name: activate the virtual environment
+  #   command: source /opt/yt-cut/venv/bin/activate
+
+  - name: Install required python packages
+    command: /opt/yt-cut/venv/bin/pip install -r /opt/yt-cut/backend/requirements.txt
+
+  - name: Install Gunicorn
+    pip:
+      name: gunicorn
+      virtualenv: /opt/yt-cut/venv
+
+  - name: Copy nginx configuration file
+    template:
+      src: templates/nginx.conf.j2
+      dest: /etc/nginx/sites-available/yt-cut
+    vars:
+      frontend_path: /opt/yt-cut/backend/frontend
+
+  - name: Create a symlink for nginx configuration file
+    file:
+      src: /etc/nginx/sites-available/yt-cut
+      dest: /etc/nginx/sites-enabled/yt-cut
+      state: link
+
+  - name: Remove the default nginx configuration file
+    file:
+      path: /etc/nginx/sites-enabled/default
+      state: absent
+
+  - name: Install certbot
+    apt:
+      name: certbot
+      state: present
+
+  - name: Generate SSL certificate
+    command: certbot certonly --nginx -d "{{ domain_name }}"
+    when: domain_name is defined
+
+  - name: Copy SSL certificate files
+    copy:
+      src: /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem
+      dest: /etc/nginx/ssl/{{ domain_name }}/fullchain.pem
+    when: domain_name is defined
+
+  - name: Copy SSL key files
+    copy:
+      src: /etc/letsencrypt/live/{{ domain_name }}/privkey.pem
+      dest: /etc/nginx/ssl/{{ domain_name }}/privkey.pem
+    when: domain_name is defined
+
+  # update nginx configuration to use SSL
+  - name: Update nginx configuration for SSL
+    lineinfile:
+      path: /etc/nginx/sites-available/yt-cut
+      regexp: 'listen 80;'
+      line: |
+        listen 443 ssl;
+        ssl_certificate /etc/nginx/ssl/{{ domain_name }}/fullchain.pem;
+        ssl_certificate_key /etc/nginx/ssl/{{ domain_name }}/privkey.pem;
+    when: domain_name is defined
+  # restart the nginx service
+  - name: Restart the nginx service
+    service:
+      name: nginx
+      state: restarted
+
+  - name: Create systemd service file
+    template:
+      src: templates/ytcut.service.j2
+      dest: /etc/systemd/system/ytcut.service
+    vars:
+      app_dir: /opt/yt-cut/backend
+      venv_path: /opt/yt-cut/venv
+
+  - name: Start and enable ytcut service
+    systemd:
+      name: ytcut
+      state: started
+      enabled: yes
+      daemon_reload: yes
