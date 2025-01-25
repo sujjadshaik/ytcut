@@ -8,6 +8,8 @@ Group=www-data
 WorkingDirectory={{ app_dir }}
 Environment="PATH={{ venv_path }}/bin"
 ExecStart={{ venv_path }}/bin/gunicorn --workers 3 --bind unix:ytcut.sock -m 007 server:app
+StandardOutput=file:/var/log/ytcut/ytcut.log
+StandardError=file:/var/log/ytcut/ytcut_error.log
 
 [Install]
 WantedBy=multi-user.target

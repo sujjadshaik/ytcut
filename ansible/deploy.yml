@@ -47,7 +47,7 @@
       src: templates/nginx.conf.j2
       dest: /etc/nginx/sites-available/yt-cut
     vars:
-      frontend_path: /opt/yt-cut/backend/frontend
+      frontend_path: /opt/yt-cut/frontend
 
   - name: Create a symlink for nginx configuration file
     file:
